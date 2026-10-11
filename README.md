@@ -2,7 +2,7 @@
 
 Interactive explorer for backscatter radio design parameters. Static site, no build step.
 
-**Live:** https://matthew-marsicano.github.io/backscatter-radio-viz/
+**Live:** https://matthewmarsicano.com/backscatter-radio-viz/
 
 ## What it shows
 
