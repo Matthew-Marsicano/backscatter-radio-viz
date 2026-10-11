@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backscatter Designer</title>
+  <meta name="description" content="Interactive link budget, load constellation, spectrum and coverage explorer for backscatter radio design.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Backscatter Designer</h1>
+      <p class="sub">Link budget, load states, sideband spectrum and coverage for an N-phase backscatter tag.</p>
+    </div>
+    <div class="top-actions">
+      <button id="theme-btn" class="ghost" type="button" aria-label="Toggle color theme">Theme</button>
+      <button id="reset-btn" class="ghost" type="button">Reset</button>
+      <button id="share-btn" class="ghost" type="button">Copy link</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="controls" id="controls">
+      <section>
+        <h2>Carrier source</h2>
+        <div class="ctl" data-key="fc"></div>
+        <div class="ctl" data-key="ptx"></div>
+        <div class="ctl" data-key="gtx"></div>
+      </section>
+      <section>
+        <h2>Receiver</h2>
+        <div class="ctl" data-key="grx"></div>
+        <div class="ctl" data-key="sens"></div>
+        <div class="ctl" data-key="d0"></div>
+        <div class="ctl" data-key="iso"></div>
+      </section>
+      <section>
+        <h2>Geometry</h2>
+        <div class="ctl" data-key="d1"></div>
+        <div class="ctl" data-key="d2"></div>
+      </section>
+      <section>
+        <h2>Tag</h2>
+        <div class="ctl" data-key="gtag"></div>
+        <div class="ctl" data-key="il"></div>
+        <div class="ctl" data-key="fsw"></div>
+        <div class="ctl" data-key="nph"></div>
+        <div class="seg" role="radiogroup" aria-label="Load definition">
+          <button type="button" data-mode="phasor" class="on">Ideal + error</button>
+          <button type="button" data-mode="z">Impedances</button>
+        </div>
+        <div id="phasor-ctl">
+          <div class="ctl" data-key="gmag"></div>
+          <div class="ctl" data-key="perr"></div>
+          <div class="ctl" data-key="aerr"></div>
+          <p class="hint">Error is applied to state 1 only.</p>
+        </div>
+        <div id="z-ctl" hidden>
+          <p class="hint">Load impedance per state, Z0 = 50 Ω. Seeded from the ideal states.</p>
+          <div id="z-list"></div>
+        </div>
+      </section>
+    </aside>
+
+    <main>
+      <div class="tiles" id="tiles"></div>
+
+      <div class="grid">
+        <article class="card wide">
+          <header><h3>Link budget vs distance</h3><p>Desired sideband power at the receiver. Sensitivity shown dashed.</p></header>
+          <div class="plot" id="p-link"></div>
+        </article>
+
+        <article class="card">
+          <header><h3>Load states</h3><p>Reflection coefficients on the Smith chart. Ring = ideal target.</p></header>
+          <div class="plot square" id="p-smith"></div>
+        </article>
+
+        <article class="card">
+          <header><h3>Image rejection</h3><p>IRR vs state-1 phase and amplitude error. 20 dB contour drawn.</p></header>
+          <div class="plot square" id="p-irr"></div>
+        </article>
+
+        <article class="card wide">
+          <header><h3>Spectrum at receiver</h3><p>Carrier leakage and tag harmonics at f<sub>c</sub> + k·f<sub>sw</sub>. BLE advertising channels shaded.</p></header>
+          <div class="plot" id="p-spec"></div>
+          <details>
+            <summary>Table view</summary>
+            <div class="tbl-wrap"><table id="spec-table"></table></div>
+          </details>
+        </article>
+
+        <article class="card wide">
+          <header><h3>Bistatic coverage</h3><p>Desired sideband power over tag position. Carrier at origin, receiver at (d<sub>0</sub>, 0). Contour = sensitivity.</p></header>
+          <div class="plot tall" id="p-map"></div>
+        </article>
+      </div>
+
+      <section class="notes">
+        <h3>Model</h3>
+        <ul>
+          <li>Bistatic radar equation: P<sub>rx</sub> = P<sub>tx</sub> G<sub>tx</sub> G<sub>tag</sub>² G<sub>rx</sub> λ⁴ |c<sub>k</sub>|² / ((4π)⁴ d<sub>1</sub>² d<sub>2</sub>²), minus switch loss twice.</li>
+          <li>Tag cycles through N load states with equal dwell. Harmonic k of the stepped Γ(t) has coefficient c<sub>k</sub> = sin(πk/N)/(πk) · e<sup>−jπk/N</sup> · Σ Γ<sub>n</sub> e<sup>−j2πkn/N</sup>.</li>
+          <li>Ideal N-phase stepping keeps only k ≡ 1 (mod N). N = 2 is DSB (image at −f<sub>sw</sub> equals the desired sideband). N ≥ 3 is SSB.</li>
+          <li>Carrier leakage is free-space path loss over d<sub>0</sub> minus the isolation you enter. No multipath, phase noise or polarization loss.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
